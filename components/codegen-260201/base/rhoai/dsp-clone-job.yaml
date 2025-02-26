@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: dsp-clone-job-codegen-260201-gitops
+spec:
+  template:
+    metadata:
+      name: dsp-clone-job-codegen-260201-gitops
+    spec:
+      serviceAccountName: codegen-260201-dsp-job
+      containers:
+        - name: initialize-dsp
+          image: quay.io/redhat-ai-dev/utils:latest
+          command:
+            - /bin/bash
+            - -c
+            - |
+              NS=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
+              oc wait -l statefulset=codegen-260201-notebook --for=condition=ready pod --timeout=300s
+              oc exec  StatefulSet/codegen-260201-notebook -- git clone https://github.com/fpetk/codegen-260201
+      restartPolicy: Never
